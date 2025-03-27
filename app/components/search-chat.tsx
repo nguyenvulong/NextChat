@@ -27,6 +27,21 @@ export function SearchChatPage() {
 
   const previousValueRef = useRef<string>("");
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const searchInput = useRef<string>("");
+
+  const getSearchResults = useCallback(() => {
+    if (!sessions) return [];
+    const results = sessions
+      .filter((session) => session.mask.name.includes(searchInput.current))
+      .map((session) => ({
+        id: session.id,
+        name: session.mask.name,
+        content: session.mask.context[0].content,
+      }));
+    results.sort((a, b) => b.content.length - a.content.length);
+    return results;
+  }, [sessions]);
+
   const doSearch = useCallback((text: string) => {
     const lowerCaseText = text.toLowerCase();
     const results: Item[] = [];

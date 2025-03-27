@@ -97,10 +97,6 @@ export const DEFAULT_CONFIG = {
     provider: "OpenAI" as ServiceProvider,
     model: "gpt-4o-realtime-preview-2024-10-01",
     apiKey: "",
-    azure: {
-      endpoint: "",
-      deployment: "",
-    },
     temperature: 0.9,
     voice: "alloy" as Voice,
   },

@@ -5,7 +5,7 @@ import PowerIcon from "@/app/icons/power.svg";
 import styles from "./realtime-chat.module.scss";
 import clsx from "clsx";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 
 import { useChatStore, createMessage, useAppConfig } from "@/app/store";
 
@@ -51,23 +51,14 @@ export function RealtimeChat({
   const temperature = config.realtimeConfig.temperature;
   const apiKey = config.realtimeConfig.apiKey;
   const model = config.realtimeConfig.model;
-  const azure = config.realtimeConfig.provider === "Azure";
-  const azureEndpoint = config.realtimeConfig.azure.endpoint;
-  const azureDeployment = config.realtimeConfig.azure.deployment;
   const voice = config.realtimeConfig.voice;
 
-  const handleConnect = async () => {
+  const handleConnect = useCallback(async () => {
     if (isConnecting) return;
     if (!isConnected) {
       try {
         setIsConnecting(true);
-        clientRef.current = azure
-          ? new RTClient(
-              new URL(azureEndpoint),
-              { key: apiKey },
-              { deployment: azureDeployment },
-            )
-          : new RTClient({ key: apiKey }, { model });
+        clientRef.current = new RTClient({ key: apiKey }, { model });
         const modalities: Modality[] =
           modality === "audio" ? ["text", "audio"] : ["text"];
         const turnDetection: TurnDetection = useVAD
@@ -116,7 +107,16 @@ export function RealtimeChat({
     } else {
       await disconnect();
     }
-  };
+  }, [
+    isConnecting,
+    isConnected,
+    apiKey,
+    model,
+    modality,
+    useVAD,
+    voice,
+    temperature,
+  ]);
 
   const disconnect = async () => {
     if (clientRef.current) {
@@ -228,7 +228,7 @@ export function RealtimeChat({
     audioHandlerRef.current?.stopStreamingPlayback();
   };
 
-  const toggleRecording = async () => {
+  const toggleRecording = useCallback(async () => {
     if (!isRecording && clientRef.current) {
       try {
         if (!audioHandlerRef.current) {
@@ -255,7 +255,7 @@ export function RealtimeChat({
         console.error("Failed to stop recording:", error);
       }
     }
-  };
+  }, [isRecording, useVAD]);
 
   useEffect(() => {
     // 防止重复初始化
@@ -282,7 +282,7 @@ export function RealtimeChat({
       audioHandlerRef.current?.close().catch(console.error);
       disconnect();
     };
-  }, []);
+  }, [handleConnect, isRecording, toggleRecording]);
 
   useEffect(() => {
     let animationFrameId: number;

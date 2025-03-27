@@ -7,7 +7,7 @@ import { InputRange } from "@/app/components/input-range";
 import { Voice } from "rt-client";
 import { ServiceProvider } from "@/app/constant";
 
-const providers = [ServiceProvider.OpenAI, ServiceProvider.Azure];
+const providers = [ServiceProvider.OpenAI];
 
 const models = ["gpt-4o-realtime-preview-2024-10-01"];
 
@@ -17,42 +17,6 @@ export function RealtimeConfigList(props: {
   realtimeConfig: RealtimeConfig;
   updateConfig: (updater: (config: RealtimeConfig) => void) => void;
 }) {
-  const azureConfigComponent = props.realtimeConfig.provider ===
-    ServiceProvider.Azure && (
-    <>
-      <ListItem
-        title={Locale.Settings.Realtime.Azure.Endpoint.Title}
-        subTitle={Locale.Settings.Realtime.Azure.Endpoint.SubTitle}
-      >
-        <input
-          value={props.realtimeConfig?.azure?.endpoint}
-          type="text"
-          placeholder={Locale.Settings.Realtime.Azure.Endpoint.Title}
-          onChange={(e) => {
-            props.updateConfig(
-              (config) => (config.azure.endpoint = e.currentTarget.value),
-            );
-          }}
-        />
-      </ListItem>
-      <ListItem
-        title={Locale.Settings.Realtime.Azure.Deployment.Title}
-        subTitle={Locale.Settings.Realtime.Azure.Deployment.SubTitle}
-      >
-        <input
-          value={props.realtimeConfig?.azure?.deployment}
-          type="text"
-          placeholder={Locale.Settings.Realtime.Azure.Deployment.Title}
-          onChange={(e) => {
-            props.updateConfig(
-              (config) => (config.azure.deployment = e.currentTarget.value),
-            );
-          }}
-        />
-      </ListItem>
-    </>
-  );
-
   return (
     <>
       <ListItem
@@ -128,7 +92,6 @@ export function RealtimeConfigList(props: {
               }}
             />
           </ListItem>
-          {azureConfigComponent}
           <ListItem
             title={Locale.Settings.TTS.Voice.Title}
             subTitle={Locale.Settings.TTS.Voice.SubTitle}

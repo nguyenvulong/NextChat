@@ -594,7 +594,14 @@ export function ChatActions(props: {
           : nextModel.name,
       );
     }
-  }, [chatStore, currentModel, models, session]);
+  }, [
+    chatStore,
+    currentModel,
+    models,
+    session,
+    props.setAttachImages,
+    props.setUploading,
+  ]);
 
   return (
     <div className={styles["chat-input-actions"]}>
