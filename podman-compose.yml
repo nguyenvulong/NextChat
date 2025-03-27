@@ -1,0 +1,12 @@
+services:
+  next-web:
+    container_name: next-web
+    image: docker.io/nguyenvulong/nextchat-slim:latest
+    ports:
+      - 3000:3000
+    networks:
+      - chatgpt-network
+
+networks:
+  chatgpt-network:
+    driver: bridge 

@@ -1,9 +1,11 @@
 services:
   chatgpt-next-web:
     container_name: chatgpt-next-web
+    image: nguyenvulong/nextchat-slim
+    platform: linux/amd64
     build:
       context: .
-      dockerfile: Dockerfile.prod
+      dockerfile: Dockerfile.${PLATFORM:-amd64}
     ports:
       - "3000:3000"
     environment:
