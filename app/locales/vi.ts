@@ -1,21 +1,15 @@
 import { SubmitKey } from "../store/config";
 import type { PartialLocaleType } from "./index";
 import { getClientConfig } from "../config/client";
-import { SAAS_CHAT_UTM_URL } from "@/app/constant";
+// import { SAAS_CHAT_UTM_URL } from "@/app/constant";
 const isApp = !!getClientConfig()?.isApp;
 
 const vi: PartialLocaleType = {
   WIP: "Sắp ra mắt...",
   Error: {
     Unauthorized: isApp
-      ? `😆 Cuộc trò chuyện gặp một số vấn đề, đừng lo lắng:
-    \\ 1️⃣ Nếu bạn muốn bắt đầu mà không cần cấu hình, [nhấp vào đây để bắt đầu trò chuyện ngay lập tức 🚀](${SAAS_CHAT_UTM_URL})
-    \\ 2️⃣ Nếu bạn muốn sử dụng tài nguyên OpenAI của riêng mình, hãy nhấp [vào đây](/#/settings) để thay đổi cài đặt ⚙️`
-      : `😆 Cuộc trò chuyện gặp một số vấn đề, đừng lo lắng:
-    \ 1️⃣ Nếu bạn muốn bắt đầu mà không cần cấu hình, [nhấp vào đây để bắt đầu trò chuyện ngay lập tức 🚀](${SAAS_CHAT_UTM_URL})
-    \ 2️⃣ Nếu bạn đang sử dụng phiên bản triển khai riêng, hãy nhấp [vào đây](/#/auth) để nhập khóa truy cập 🔑
-    \ 3️⃣ Nếu bạn muốn sử dụng tài nguyên OpenAI của riêng mình, hãy nhấp [vào đây](/#/settings) để thay đổi cài đặt ⚙️
- `,
+      ? `😆 [NHẤP VÀO ĐÂY](/#/auth) để nhập khóa truy cập 🔑`
+      : `😆 [NHẤP VÀO ĐÂY](/#/auth) để nhập khóa truy cập 🔑`,
   },
   Auth: {
     Title: "Cần mật khẩu",
@@ -25,9 +19,8 @@ const vi: PartialLocaleType = {
     Confirm: "Xác nhận",
     Later: "Để sau",
     Return: "Trở lại",
-    SaasTips: "Cấu hình quá phức tạp, tôi muốn sử dụng ngay lập tức",
-    TopTips:
-      "🥳 Ưu đãi ra mắt NextChat AI, mở khóa OpenAI o1, GPT-4o, Claude-3.5 và các mô hình lớn mới nhất ngay bây giờ",
+    SaasTips: "",
+    TopTips: "🥳",
   },
   ChatItem: {
     ChatItemCount: (count: number) => `${count} cuộc trò chuyện`,
