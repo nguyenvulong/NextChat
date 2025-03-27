@@ -14,8 +14,8 @@ export interface Prompt {
 
 export const SearchService = {
   ready: false,
-  builtinEngine: new Fuse<Prompt>([], { keys: ["title"] }),
-  userEngine: new Fuse<Prompt>([], { keys: ["title"] }),
+  builtinEngine: new Fuse<Prompt>([], { keys: ["title", "content"] }),
+  userEngine: new Fuse<Prompt>([], { keys: ["title", "content"] }),
   count: {
     builtin: 0,
   },
@@ -159,11 +159,21 @@ export const usePromptStore = createPersistStore(
       fetch(PROMPT_URL)
         .then((res) => res.json())
         .then((res) => {
-          let fetchPrompts = [res.en, res.tw, res.cn];
-          if (getLang() === "cn") {
-            fetchPrompts = fetchPrompts.reverse();
+          // Validate response data
+          if (!res || typeof res !== "object") {
+            console.error("Invalid prompts data format");
+            return;
           }
+
+          // Ensure we have the required language arrays
+          const fetchPrompts = [res.en || [], res.tw || [], res.cn || []];
+
+          if (getLang() === "cn") {
+            fetchPrompts.reverse();
+          }
+
           const builtinPrompts = fetchPrompts.map((promptList: PromptList) => {
+            if (!Array.isArray(promptList)) return [];
             return promptList.map(
               ([title, content]) =>
                 ({
@@ -181,8 +191,13 @@ export const usePromptStore = createPersistStore(
             .reduce((pre, cur) => pre.concat(cur), [])
             .filter((v) => !!v.title && !!v.content);
           SearchService.count.builtin =
-            res.en.length + res.cn.length + res.tw.length;
+            (res.en?.length || 0) +
+            (res.cn?.length || 0) +
+            (res.tw?.length || 0);
           SearchService.init(allPromptsForSearch, userPrompts);
+        })
+        .catch((error) => {
+          console.error("Failed to load prompts:", error);
         });
     },
   },
