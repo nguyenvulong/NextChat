@@ -656,6 +656,10 @@
 }
 
 .chat-input:focus {
+  outline: none;
+  transition: all 0.2s ease;
+  box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.1);
+  background-color: var(--white);
 }
 
 .chat-input-send {
