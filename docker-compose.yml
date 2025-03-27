@@ -1,15 +1,15 @@
 services:
   chatgpt-next-web:
     container_name: chatgpt-next-web
-    image: nguyenvulong/nextchat-slim
-    platform: linux/amd64
+    image: nguyenvulong/nextchat-slim:latest
     build:
       context: .
-      dockerfile: Dockerfile.${PLATFORM:-amd64}
+      platforms:
+        - linux/amd64
+        - linux/arm64
+    platform: linux/${ARCH:-$(uname -m | sed 's/x86_64/amd64/' | sed 's/aarch64/arm64/')}
     ports:
       - "3000:3000"
-    environment:
-      - NODE_ENV=production
     env_file:
       - .env
     restart: unless-stopped

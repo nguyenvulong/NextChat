@@ -1,99 +1,108 @@
 #!/bin/bash
 
+# Logging function
+log() {
+    echo "[$(date +'%Y-%m-%d %H:%M:%S')] $*"
+}
+
 # Function to display usage
 show_usage() {
-    echo "Usage: ./build.sh [platform]"
-    echo "Available platforms:"
-    echo "  arm64    - Build for Apple Silicon (ARM64)"
-    echo "  amd64    - Build for x86_64/AMD64"
-    echo "  all      - Build for both platforms"
-    echo "  auto     - Automatically detect platform and build (default)"
-    echo "  push     - Push multi-arch images to Docker Hub"
+    cat << EOF
+Usage: ./build.sh [platform]
+Available platforms:
+  arm64    - Build for Apple Silicon (ARM64)
+  amd64    - Build for x86_64/AMD64
+  all      - Build for both platforms
+  auto     - Automatically detect platform and build (default)
+  push     - Push multi-arch images to Docker Hub
+EOF
     exit 1
 }
 
 # Function to detect platform
 detect_platform() {
-    if [[ $(uname -m) == "arm64" ]]; then
-        echo "arm64"
-    elif [[ $(uname -m) == "x86_64" ]]; then
-        echo "amd64"
-    else
-        echo "unknown"
-    fi
+    local arch=$(uname -m)
+    case $arch in
+        "arm64")  echo "arm64" ;;
+        "aarch64") echo "arm64" ;;
+        "x86_64") echo "amd64" ;;
+        *) 
+            log "Error: Unsupported architecture $arch"
+            exit 1
+            ;;
+    esac
 }
 
 # Function to build for a specific platform
 build_for_platform() {
     local platform=$1
-    echo "Building for $platform..."
+    log "Building for $platform..."
     
-    # Update docker-compose file with the correct platform
-    sed -i '' "s/platform: linux\/.*/platform: linux\/$platform/" docker-compose.yml
+    # Use buildx with the Dockerfile
+    docker buildx build \
+        --platform linux/$platform \
+        --tag nguyenvulong/nextchat-slim:$platform \
+        --load \
+        .
     
-    # Build using docker-compose with platform and build variables
-    PLATFORM=$platform \
-    BUILDPLATFORM=linux/$platform \
-    TARGETPLATFORM=linux/$platform \
-    docker-compose -f docker-compose.yml build
-    
-    # Tag the image with platform-specific tag
-    docker tag nguyenvulong/nextchat-slim:latest nguyenvulong/nextchat-slim:${platform}
-    
-    echo "Build completed for $platform"
+    log "Build completed for $platform"
 }
 
 # Function to push multi-arch images
 push_multi_arch() {
-    echo "Pushing platform-specific images..."
+    log "Pushing multi-arch images..."
     
-    # Push individual platform images first
-    docker push nguyenvulong/nextchat-slim:arm64
-    docker push nguyenvulong/nextchat-slim:amd64
+    # Build and push with automatic cleanup of builder containers
+    docker buildx build \
+        --platform linux/arm64,linux/amd64 \
+        --tag nguyenvulong/nextchat-slim:latest \
+        --push \
+        --rm \
+        .
     
-    echo "Creating and pushing multi-arch manifest..."
-    
-    # Create a new manifest
-    docker manifest create nguyenvulong/nextchat-slim:latest \
-        nguyenvulong/nextchat-slim:arm64 \
-        nguyenvulong/nextchat-slim:amd64
-    
-    # Push the manifest
-    docker manifest push nguyenvulong/nextchat-slim:latest
+    log "Multi-arch image pushed successfully"
+}
+
+# Validate Docker buildx availability
+validate_buildx() {
+    if ! docker buildx version &> /dev/null; then
+        log "Error: Docker buildx is not available. Please install or enable buildx."
+        exit 1
+    fi
 }
 
 # Main script
-if [ $# -eq 0 ]; then
-    PLATFORM="auto"
-else
-    PLATFORM=$1
-fi
-
-case $PLATFORM in
-    "arm64")
-        build_for_platform "arm64"
-        ;;
-    "amd64")
-        build_for_platform "amd64"
-        ;;
-    "all")
-        build_for_platform "arm64"
-        build_for_platform "amd64"
-        push_multi_arch
-        ;;
-    "auto")
-        DETECTED_PLATFORM=$(detect_platform)
-        if [ "$DETECTED_PLATFORM" == "unknown" ]; then
-            echo "Error: Could not detect platform"
+main() {
+    # Default to auto if no argument provided
+    local platform=${1:-"auto"}
+    
+    # Validate buildx
+    validate_buildx
+    
+    case $platform in
+        "arm64")
+            build_for_platform "arm64"
+            ;;
+        "amd64")
+            build_for_platform "amd64"
+            ;;
+        "all")
+            build_for_platform "arm64"
+            build_for_platform "amd64"
+            push_multi_arch
+            ;;
+        "auto")
+            local detected_platform=$(detect_platform)
+            build_for_platform "$detected_platform"
+            ;;
+        "push")
+            push_multi_arch
+            ;;
+        *)
             show_usage
-        else
-            build_for_platform "$DETECTED_PLATFORM"
-        fi
-        ;;
-    "push")
-        push_multi_arch
-        ;;
-    *)
-        show_usage
-        ;;
-esac 
+            ;;
+    esac
+}
+
+# Execute main function
+main "$@"

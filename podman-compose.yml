@@ -5,8 +5,11 @@ services:
     ports:
       - 3000:3000
     networks:
-      - chatgpt-network
+      - next-chat-network
+    env_file:
+      - .env
 
 networks:
-  chatgpt-network:
-    driver: bridge 
+  next-chat-network:
+    driver: bridge
+    name: next-chat-network
