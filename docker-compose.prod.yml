@@ -1,0 +1,13 @@
+services:
+  chatgpt-next-web:
+    container_name: chatgpt-next-web
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+    env_file:
+      - .env
+    restart: unless-stopped
